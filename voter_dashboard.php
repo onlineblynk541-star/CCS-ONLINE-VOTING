@@ -4,19 +4,12 @@ session_start();
 // Set the correct timezone for accurate schedule checking
 date_default_timezone_set('Asia/Manila');
 
-// --- Database Configuration (Same as your API) ---
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', ''); 
-define('DB_NAME', 'evoting_db');
+// Include the separate database connection file
+require_once 'db_config.php'; 
 
-try {
-    $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
-}
+// --- Fetch Election Settings for Time Window ---
+$electionSettings = ['start_time' => null, 'end_time' => null];
+// ... rest of your code ...
 
 // --- Fetch Election Settings for Time Window ---
 $electionSettings = ['start_time' => null, 'end_time' => null];
