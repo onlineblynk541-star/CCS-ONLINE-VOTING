@@ -1,23 +1,21 @@
 <?php
-// --- Database Configuration (XAMPP Default) ---
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');      // Default XAMPP username
-define('DB_PASS', '');          // Default XAMPP password is empty
-define('DB_NAME', 'evoting_db');
+$host = getenv("MYSQLHOST");
+$user = getenv("MYSQLUSER");
+$pass = getenv("MYSQLPASSWORD");
+$dbname = getenv("MYSQLDATABASE");
+$port = getenv("MYSQLPORT");
 
-// --- Shared Database Connection ---
 try {
-    // Create a new PDO instance
-    $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS);
-    
-    // Set PDO error mode to exception for easier debugging
+    $pdo = new PDO(
+        "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4",
+        $user,
+        $pass
+    );
+
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    
-    // Set default fetch mode to associative array
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 
 } catch (PDOException $e) {
-    // Stop execution and display an error message if the connection fails
-    die("Database connection failed. Please ensure XAMPP MySQL is running. Error: " . $e->getMessage());
+    die("Database connection failed: " . $e->getMessage());
 }
 ?>
