@@ -5,7 +5,7 @@ session_start();
 date_default_timezone_set('Asia/Manila');
 
 // Include the separate database connection file
-require_once 'db_config.php'; 
+require_once 'db_connection.php'; 
 
 // --- Fetch Election Settings for Time Window ---
 $electionSettings = ['start_time' => null, 'end_time' => null];
