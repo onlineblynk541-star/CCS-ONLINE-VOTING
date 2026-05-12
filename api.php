@@ -28,7 +28,7 @@ $action = $data['action'] ?? null;
 $collection = $data['collection'] ?? null;
 
 // Allow actions that don't require collections
-if (!$action || (!$collection && !in_array($action, ['reset_votes', 'get_settings', 'save_settings']))) {
+if (!$action || (!$collection && !in_array($action, ['reset_votes', 'get_settings', 'save_settings', 'register_voter', 'approve_voter']))) {
     echo json_encode(['success' => false, 'message' => 'Missing action or collection parameter.']);
     exit();
 }
@@ -58,6 +58,12 @@ switch ($action) {
         break;
     case 'save_settings':
         handleSaveSettings($pdo, $data); 
+        break;
+    case 'register_voter':
+        handleRegisterVoter($pdo, $data);
+        break;
+    case 'approve_voter':
+        handleApproveVoter($pdo, $data);
         break;
     default:
         echo json_encode(['success' => false, 'message' => "Unknown action: $action"]);
@@ -101,7 +107,8 @@ function handleGet($pdo, $collection) {
 function handleAdd($pdo, $collection, $data) {
     try {
         if ($collection === 'voters') {
-            $sql = "INSERT INTO voters (student_id, name, course) VALUES (:student_id, :name, :course)";
+            // Admin manual adds are automatically approved (is_approved = 1)
+            $sql = "INSERT INTO voters (student_id, name, course, is_approved) VALUES (:student_id, :name, :course, 1)";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
                 ':student_id' => $data['studentId'],
@@ -259,6 +266,33 @@ function handleSaveSettings($pdo, $data) {
         echo json_encode(['success' => true]);
     } catch (Exception $e) {
         echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    }
+}
+
+function handleRegisterVoter($pdo, $data) {
+    try {
+        // Students registering themselves start with is_approved = 0
+        $sql = "INSERT INTO voters (student_id, name, course, is_approved) VALUES (:student_id, :name, :course, 0)";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ':student_id' => $data['studentId'],
+            ':name' => $data['name'],
+            ':course' => $data['course']
+        ]);
+        echo json_encode(['success' => true, 'message' => 'Registration submitted. Awaiting approval.']);
+    } catch (PDOException $e) {
+        echo json_encode(['success' => false, 'message' => "SQL Error: " . $e->getMessage()]);
+    }
+}
+
+function handleApproveVoter($pdo, $data) {
+    try {
+        $sql = "UPDATE voters SET is_approved = 1 WHERE id = :id";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([':id' => $data['id']]);
+        echo json_encode(['success' => true]);
+    } catch (PDOException $e) {
+        echo json_encode(['success' => false, 'message' => "SQL Error: " . $e->getMessage()]);
     }
 }
 ?>
