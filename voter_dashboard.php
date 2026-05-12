@@ -415,7 +415,7 @@ if (isset($_SESSION['voter_id'])) {
             <div class="p-6 md:p-10 max-w-5xl mx-auto">
                 
                 <div class="mb-8">
-                    <h1 class="text-3xl font-bold text-gray-800">Election Day 2025</h1>
+                    <h1 class="text-3xl font-bold text-gray-800">Election Day 2026-2027</h1>
                     <?php if(!$voterData['has_voted']): ?>
                         <?php if($isVotingOpen): ?>
                             <p class="text-gray-500 mt-1">Please select your preferred candidates below. This action cannot be undone.</p>
