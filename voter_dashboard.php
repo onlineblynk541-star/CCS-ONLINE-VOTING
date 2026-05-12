@@ -9,10 +9,6 @@ require_once 'db_connection.php';
 
 // --- Fetch Election Settings for Time Window ---
 $electionSettings = ['start_time' => null, 'end_time' => null];
-// ... rest of your code ...
-
-// --- Fetch Election Settings for Time Window ---
-$electionSettings = ['start_time' => null, 'end_time' => null];
 try {
     $stmtSettings = $pdo->query("SELECT setting_key, setting_value FROM settings WHERE setting_key IN ('start_time', 'end_time')");
     while ($rowSettings = $stmtSettings->fetch()) {
@@ -294,6 +290,9 @@ if (isset($_SESSION['voter_id'])) {
     <?php if (!isset($_SESSION['voter_id'])): ?>
     <div class="flex-1 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md p-8 rounded-2xl shadow-xl border-t-4 border-primary">
+            <div class="text-center mb-8">
+                <img src="OIP.jpg" alt="JRMSU Logo" class="h-24 w-auto mx-auto drop-shadow-md">
+            </div>
            <div class="flex items-center">
     <div class="bg-secondary p-2 rounded-lg shadow-lg">
         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -415,7 +414,7 @@ if (isset($_SESSION['voter_id'])) {
             <div class="p-6 md:p-10 max-w-5xl mx-auto">
                 
                 <div class="mb-8">
-                    <h1 class="text-3xl font-bold text-gray-800">Election Day 2026-2027</h1>
+                    <h1 class="text-3xl font-bold text-gray-800">Election Day 2025</h1>
                     <?php if(!$voterData['has_voted']): ?>
                         <?php if($isVotingOpen): ?>
                             <p class="text-gray-500 mt-1">Please select your preferred candidates below. This action cannot be undone.</p>
