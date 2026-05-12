@@ -155,7 +155,7 @@
                 </div>
                 <div class="mb-6">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Course & Year</label>
-                    <input type="text" id="reg-course" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-secondary focus:border-secondary" placeholder="e.g. BSIT - 3">
+                    <input type="text" id="reg-course" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-secondary focus:border-secondary" placeholder="e.g. JRMSU">
                 </div>
                 <button type="submit" id="reg-submit-btn" class="w-full bg-primary text-white font-bold py-3 rounded-lg hover:bg-secondary transition-colors">Submit Registration</button>
             </form>
