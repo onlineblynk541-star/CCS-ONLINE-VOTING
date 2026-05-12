@@ -99,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 
     $voterId = $_SESSION['voter_id'];
-    $votes = $_POST['votes'] ?? []; // Array of candidate IDs or Arrays of IDs
+    $votes = $_POST['votes'] ?? []; 
 
     // Check if already voted
     $stmt = $pdo->prepare("SELECT has_voted FROM voters WHERE id = ?");
@@ -116,7 +116,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 
     foreach ($votes as $positionId => $candidateData) {
-        // ENFORCED RULE: Only 1 vote per position allowed regardless of database setting
         $maxAllowed = 1; 
         if (is_array($candidateData) && count($candidateData) > $maxAllowed) {
             die("Overvoting detected! You exceeded the maximum allowed votes. The ballot is void.");
@@ -127,14 +126,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $pdo->beginTransaction();
     try {
         foreach ($votes as $positionId => $candidateData) {
-            // Check if input is an array (Multiple selections/Checkboxes)
             if (is_array($candidateData)) {
                 foreach ($candidateData as $cId) {
                     $stmt = $pdo->prepare("INSERT INTO votes (voter_id, position_id, candidate_id) VALUES (?, ?, ?)");
                     $stmt->execute([$voterId, $positionId, $cId]);
                 }
             } else {
-                // Input is a single value (Radio button)
                 $stmt = $pdo->prepare("INSERT INTO votes (voter_id, position_id, candidate_id) VALUES (?, ?, ?)");
                 $stmt->execute([$voterId, $positionId, $candidateData]);
             }
@@ -146,7 +143,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
         $pdo->commit();
         $success = "Vote cast successfully!";
-        // Refresh to show results immediately
         header("Location: voter_dashboard.php");
         exit();
     } catch (Exception $e) {
@@ -155,24 +151,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// --- Fetch Data for Dashboard (Only if logged in) ---
+// --- Fetch Data for Dashboard ---
 $voterData = null;
 $positions = [];
 $candidates = [];
 $voteCounts = [];
 
 if (isset($_SESSION['voter_id'])) {
-    // Get Voter Status
     $stmt = $pdo->prepare("SELECT * FROM voters WHERE id = ?");
     $stmt->execute([$_SESSION['voter_id']]);
     $voterData = $stmt->fetch();
 
     if ($voterData) {
-        // ALWAYS Get Positions and Candidates (needed for both voting and results)
         $stmt = $pdo->query("SELECT * FROM positions ORDER BY id ASC");
         $positions = $stmt->fetchAll();
 
-        // Query modified in previous step to include `image` in SELECT *
         $stmt = $pdo->query("SELECT * FROM candidates ORDER BY name ASC");
         $allCandidates = $stmt->fetchAll();
         
@@ -180,7 +173,6 @@ if (isset($_SESSION['voter_id'])) {
             $candidates[$c['position_id']][] = $c;
         }
 
-        // IF VOTED: Get Results Data
         if ($voterData['has_voted'] == 1) {
             $stmt = $pdo->query("SELECT candidate_id, COUNT(*) as count FROM votes GROUP BY candidate_id");
             while ($row = $stmt->fetch()) {
@@ -195,7 +187,7 @@ if (isset($_SESSION['voter_id'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Voter Dashboard - JRMSU E-Voting</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -206,11 +198,8 @@ if (isset($_SESSION['voter_id'])) {
                     sans: ['Inter', 'sans-serif'],
                 },
                 colors: {
-                    // Deep Professional Navy
                     'primary': '#001f3f', 
-                    // JRMSU Gold
                     'secondary': '#DAA520', 
-                    // Soft background
                     'bg-slate': '#f1f5f9',
                     'accent': '#FFD700',
                 },
@@ -219,25 +208,17 @@ if (isset($_SESSION['voter_id'])) {
     };
     </script>
     <style>
-    body {
-        font-family: 'Inter', sans-serif;
+    /* CRITICAL FIX: Lock the html and body so it NEVER scrolls completely */
+    html, body {
+        height: 100%;
+        width: 100%;
+        overflow: hidden; /* Pinipigilan ang buong page na mag scroll pataas */
+        margin: 0;
+        padding: 0;
         background-color: #f1f5f9;
+        font-family: 'Inter', sans-serif;
     }
 
-    /* Modern Gradient Header */
-    .header-gradient {
-        background: linear-gradient(135deg, #001f3f 0%, #003366 100%);
-    }
-
-    /* Glassmorphism Card for Login & Ballot */
-    .glass-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        box-shadow: 0 8px 32px 0 rgba(0, 31, 63, 0.1);
-    }
-
-    /* Candidate Selection Card */
     .candidate-option {
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         border: 2px solid transparent;
@@ -249,7 +230,6 @@ if (isset($_SESSION['voter_id'])) {
         background-color: #fffdf0;
     }
 
-    /* Custom Checkbox/Radio highlight */
     input[type="radio"]:checked + div, 
     input[type="checkbox"]:checked + div {
         border-color: #DAA520;
@@ -257,38 +237,32 @@ if (isset($_SESSION['voter_id'])) {
         box-shadow: 0 0 15px rgba(218, 165, 32, 0.2);
     }
 
-    /* Show Check icon when selected */
     input[type="radio"]:checked + div .check-icon,
     input[type="checkbox"]:checked + div .check-icon {
         opacity: 1;
         transform: scale(1);
     }
 
-    /* Navigation Buttons */
-    .btn-nav {
-        @apply px-4 py-2 rounded-lg transition-all duration-200 font-semibold;
+    /* Custom Scrollbar for smoother look */
+    ::-webkit-scrollbar {
+        width: 8px;
     }
-    .btn-nav:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-        color: #DAA520;
+    ::-webkit-scrollbar-track {
+        background: #f1f5f9;
     }
-
-    /* Submit Button Effect */
-    .btn-submit {
-        background: linear-gradient(135deg, #001f3f 0%, #003366 100%);
-        transition: all 0.3s ease;
+    ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
     }
-    .btn-submit:hover {
-        background: #DAA520;
-        transform: scale(1.02);
-        box-shadow: 0 10px 20px rgba(218, 165, 32, 0.3);
+    ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
     }
     </style>
 </head>
-<body class="text-gray-800 antialiased bg-gray-50 m-0 p-0">
+<body class="text-gray-800 antialiased">
 
     <?php if (!isset($_SESSION['voter_id'])): ?>
-    <div class="min-h-screen flex items-center justify-center p-4">
+    <div class="h-full w-full flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md p-8 rounded-2xl shadow-xl border-t-4 border-primary">
             <div class="text-center mb-8">
                 <img src="OIP.jpg" alt="JRMSU Logo" class="h-24 w-24 rounded-full object-cover mx-auto drop-shadow-md border-2 border-secondary">
@@ -367,14 +341,15 @@ if (isset($_SESSION['voter_id'])) {
     </script>
 
     <?php else: ?>
-    <div class="flex h-screen w-full overflow-hidden bg-gray-50">
+    
+    <div class="fixed inset-0 w-full h-full flex bg-gray-50">
         
-        <aside class="w-64 bg-primary text-white flex-shrink-0 hidden md:flex flex-col z-20 shadow-xl h-full">
+        <aside class="w-64 bg-primary text-white flex-shrink-0 hidden md:flex flex-col z-30 shadow-2xl h-full">
             <div class="p-6 flex items-center border-b border-white/10 shrink-0">
                 <svg class="h-8 w-8 text-accent mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
                 <span class="text-lg font-bold">Voter Portal</span>
             </div>
-            <div class="p-6 flex-1">
+            <div class="p-6 flex-1 overflow-hidden">
                 <div class="mb-6">
                     <p class="text-xs text-gray-300 uppercase tracking-wider mb-1">Student Name</p>
                     <p class="font-semibold text-lg break-words"><?php echo htmlspecialchars($_SESSION['voter_name']); ?></p>
@@ -382,15 +357,15 @@ if (isset($_SESSION['voter_id'])) {
                 <div class="mb-6">
                     <p class="text-xs text-gray-300 uppercase tracking-wider mb-1">Status</p>
                     <?php if($voterData['has_voted']): ?>
-                        <span class="inline-block bg-green-500 text-white text-xs px-2 py-1 rounded-full">Voted</span>
+                        <span class="inline-block bg-green-500 text-white text-xs px-2 py-1 rounded-full shadow">Voted</span>
                     <?php elseif(!$isVotingOpen): ?>
-                        <span class="inline-block bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">Closed</span>
+                        <span class="inline-block bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow">Closed</span>
                     <?php else: ?>
-                        <span class="inline-block bg-accent text-primary text-xs px-2 py-1 rounded-full font-bold">Ready to Vote</span>
+                        <span class="inline-block bg-accent text-primary text-xs px-2 py-1 rounded-full font-bold shadow">Ready to Vote</span>
                     <?php endif; ?>
                 </div>
             </div>
-            <div class="mt-auto p-6 border-t border-white/10 shrink-0 bg-primary/50">
+            <div class="mt-auto p-6 border-t border-white/10 shrink-0 bg-black/20">
                 <a href="?logout=true" class="flex items-center text-gray-300 hover:text-white transition-colors">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     Logout
@@ -398,7 +373,7 @@ if (isset($_SESSION['voter_id'])) {
             </div>
         </aside>
 
-        <div class="flex-1 flex flex-col h-full relative">
+        <div class="flex-1 flex flex-col h-full min-w-0 relative">
             
             <header class="bg-primary text-white p-4 md:hidden flex justify-between items-center shadow-md z-20 shrink-0">
                 <div class="font-bold flex items-center">
@@ -408,8 +383,8 @@ if (isset($_SESSION['voter_id'])) {
                 <a href="?logout=true" class="text-sm bg-white/10 px-3 py-1 rounded hover:bg-white/20 transition-colors">Logout</a>
             </header>
 
-            <main class="flex-1 overflow-y-auto w-full bg-gray-50">
-                <div class="p-6 md:p-10 max-w-5xl mx-auto pb-32"> <div class="mb-8">
+            <main class="flex-1 overflow-y-auto w-full relative z-10 scroll-smooth">
+                <div class="p-6 md:p-10 max-w-5xl mx-auto pb-40"> <div class="mb-8">
                         <h1 class="text-3xl font-bold text-gray-800">Election Day <?php echo date('Y'); ?></h1>
                         <?php if(!$voterData['has_voted']): ?>
                             <?php if($isVotingOpen): ?>
@@ -448,13 +423,11 @@ if (isset($_SESSION['voter_id'])) {
                                             <?php 
                                             $posCandidates = $candidates[$position['id']] ?? [];
                                             
-                                            // Calculate total votes
                                             $totalPosVotes = 0;
                                             foreach($posCandidates as $c) {
                                                 $totalPosVotes += ($voteCounts[$c['id']] ?? 0);
                                             }
 
-                                            // Sort candidates
                                             usort($posCandidates, function($a, $b) use ($voteCounts) {
                                                 return ($voteCounts[$b['id']] ?? 0) - ($voteCounts[$a['id']] ?? 0);
                                             });
@@ -512,15 +485,15 @@ if (isset($_SESSION['voter_id'])) {
                                 
                                 <div class="space-y-8">
                                     <?php foreach($positions as $position): ?>
-                                        <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
-                                            <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                                        <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 relative">
+                                            <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center sticky top-0 z-10">
                                                 <h3 class="text-lg font-bold text-primary"><?php echo htmlspecialchars($position['name']); ?></h3>
-                                                <span class="text-xs bg-secondary text-white px-2 py-1 rounded">
+                                                <span class="text-xs bg-secondary text-white px-2 py-1 rounded shadow-sm">
                                                     Select 1
                                                 </span>
                                             </div>
                                             
-                                            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div class="p-6 grid grid-cols-1 xl:grid-cols-2 gap-4">
                                                 <?php 
                                                 $posCandidates = $candidates[$position['id']] ?? [];
                                                 if(empty($posCandidates)): 
@@ -528,7 +501,7 @@ if (isset($_SESSION['voter_id'])) {
                                                     <p class="text-gray-400 italic col-span-2">No candidates for this position.</p>
                                                 <?php else: ?>
                                                     <?php foreach($posCandidates as $candidate): ?>
-                                                        <label class="cursor-pointer group">
+                                                        <label class="cursor-pointer group flex h-full">
                                                             
                                                             <input type="radio" 
                                                                 name="votes[<?php echo $position['id']; ?>]" 
@@ -538,7 +511,7 @@ if (isset($_SESSION['voter_id'])) {
                                                                 data-max="1"
                                                                 required>
                                                             
-                                                            <div class="p-4 rounded-lg border-2 border-gray-200 hover:border-secondary transition-all flex items-center h-full">
+                                                            <div class="w-full p-4 rounded-lg border-2 border-gray-200 group-hover:border-secondary transition-all flex items-center bg-white shadow-sm hover:shadow-md">
                                                                 
                                                                 <?php if (!empty($candidate['image'])): ?>
                                                                     <img src="<?php echo htmlspecialchars($candidate['image']); ?>" alt="Profile" class="h-16 w-16 md:h-20 md:w-20 rounded-full object-cover mr-4 shrink-0 border border-gray-200 group-hover:border-secondary transition-colors shadow-sm">
@@ -547,12 +520,12 @@ if (isset($_SESSION['voter_id'])) {
                                                                         <?php echo substr(htmlspecialchars($candidate['name']), 0, 1); ?>
                                                                     </div>
                                                                 <?php endif; ?>
-                                                                <div class="flex-1">
-                                                                    <div class="font-bold text-gray-800 text-md md:text-lg"><?php echo htmlspecialchars($candidate['name']); ?></div>
-                                                                    <div class="text-sm text-gray-500"><?php echo htmlspecialchars($candidate['party_list'] ?? 'Independent'); ?></div>
+                                                                <div class="flex-1 min-w-0">
+                                                                    <div class="font-bold text-gray-800 text-md md:text-lg truncate"><?php echo htmlspecialchars($candidate['name']); ?></div>
+                                                                    <div class="text-sm text-gray-500 truncate"><?php echo htmlspecialchars($candidate['party_list'] ?? 'Independent'); ?></div>
                                                                 </div>
-                                                                <div class="check-icon opacity-0 transform scale-50 transition-all duration-200 text-primary ml-2">
-                                                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                                                <div class="check-icon opacity-0 transform scale-50 transition-all duration-200 text-primary ml-2 shrink-0">
+                                                                    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
                                                                 </div>
                                                             </div>
                                                         </label>
@@ -563,8 +536,8 @@ if (isset($_SESSION['voter_id'])) {
                                     <?php endforeach; ?>
                                 </div>
 
-                                <div class="mt-12 mb-8 flex justify-end w-full">
-                                    <button type="submit" onclick="return confirm('Are you sure you want to submit your vote? This cannot be changed.');" class="bg-gradient-to-r from-primary to-secondary text-white text-lg font-bold py-4 px-10 rounded-xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200 w-full md:w-auto text-center">
+                                <div class="mt-12 flex justify-end">
+                                    <button type="submit" onclick="return confirm('Are you sure you want to submit your vote? This cannot be changed.');" class="bg-gradient-to-r from-primary to-secondary text-white text-lg font-bold py-4 px-10 rounded-xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200 w-full sm:w-auto text-center">
                                         Submit Official Ballot
                                     </button>
                                 </div>
@@ -594,8 +567,6 @@ if (isset($_SESSION['voter_id'])) {
                 const posId = this.getAttribute('data-position');
                 const maxAllowed = parseInt(this.getAttribute('data-max'), 10);
                 
-                // Only needed if you ever change inputs to type="checkbox", 
-                // but kept here as requested just in case.
                 const checkedBoxes = document.querySelectorAll(`.jrmsu-checkbox[data-position="${posId}"]:checked`);
                 
                 if (checkedBoxes.length > maxAllowed) {
