@@ -81,7 +81,7 @@
                     </div>
                     
                     <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.1]">Shape Your <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-secondary via-accent to-secondary animate-pulse-slow">Future Today.</span></h1>
-                    <p class="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto lg:mx-0 font-light leading-relaxed">Welcome to the official Supreme Student Government E-Voting Portal of Jose Rizal Memorial State University - Siocon Campus. Your voice matters. Vote securely, transparently, and easily.</p>
+                    <p class="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto lg:mx-0 font-light leading-relaxed">Welcome to the official WEB-BASED E-VOTING SYSTEM Portal of Jose Rizal Memorial State University - Siocon Campus. Your voice matters. Vote securely, transparently, and easily.</p>
                     
                     <div class="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 pt-4">
                         <a href="voter_dashboard.php" class="group flex items-center justify-center px-8 py-4 text-lg font-bold rounded-xl text-primary bg-secondary hover:bg-accent transition-all shadow-[0_0_20px_rgba(218,165,32,0.4)] transform hover:-translate-y-1">
