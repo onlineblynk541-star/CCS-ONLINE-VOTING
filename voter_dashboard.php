@@ -1,5 +1,7 @@
-                                <?php
+                              
+<?php
 session_start();
+
 
 // Set the correct timezone for accurate schedule checking
 date_default_timezone_set('Asia/Manila');
