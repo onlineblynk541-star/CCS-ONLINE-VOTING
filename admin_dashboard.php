@@ -74,7 +74,7 @@ $api_url = 'api.php';
             <header class="flex items-center justify-between mb-8 flex-wrap gap-4">
                 
                 <div class="flex items-center space-x-3 md:space-x-4">
-                    <img src="e402c0ae-139a-47d0-8fa7-e3b9d40864f1.jpg" alt="SSG Logo" class="h-12 w-auto md:h-20 object-contain drop-shadow-md">
+                    <img src="SSG.jpg" alt="SSG Logo" class="h-12 w-auto md:h-20 object-contain drop-shadow-md">
                     <div>
                         <h1 class="text-xl md:text-3xl font-bold text-primary" id="main-header-title">Admin Dashboard</h1>
                         <p class="text-xs md:text-base text-gray-500" id="main-header-subtitle">Welcome to the JRMSU Siocon SSG E-Voting System.</p>
