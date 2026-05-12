@@ -75,11 +75,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login_attempt'])) {
 <body class="flex items-center justify-center min-h-screen bg-gray-100">
     <div class="w-full max-w-md bg-white p-8 rounded-xl shadow-2xl border-t-4 border-secondary">
         <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary mb-4">
-                <svg class="h-8 w-8 text-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                </svg>
-            </div>
+            
+            <img src="OIP.jpg" alt="JRMSU Logo" class="mx-auto w-24 h-24 rounded-full object-cover border-2 border-secondary shadow-md mb-4">
+            
             <h1 class="text-2xl font-bold text-primary">JRMSU E-Voting</h1>
             <p class="text-gray-500 text-sm mt-1">Please sign in to access the dashboard</p>
         </div>
