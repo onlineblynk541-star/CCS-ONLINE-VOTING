@@ -291,7 +291,7 @@ if (isset($_SESSION['voter_id'])) {
     <div class="flex-1 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md p-8 rounded-2xl shadow-xl border-t-4 border-primary">
             <div class="text-center mb-8">
-                <img src="OIP.jpg" alt="JRMSU Logo" class="h-24 w-auto mx-auto drop-shadow-md">
+                <img src="OIP.jpg" alt="JRMSU Logo" class="h-24 w-24 rounded-full object-cover mx-auto drop-shadow-md border-2 border-secondary">
             </div>
            <div class="flex items-center">
     <div class="bg-secondary p-2 rounded-lg shadow-lg">
