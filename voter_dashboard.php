@@ -1,20 +1,16 @@
-                              
 <?php
 session_start();
-
 
 // Set the correct timezone for accurate schedule checking
 date_default_timezone_set('Asia/Manila');
 
 // Include the separate database connection file
-require_once 'db_connection.php';
+require_once 'db_connection.php'; 
 
 // --- Fetch Election Settings for Time Window ---
 $electionSettings = ['start_time' => null, 'end_time' => null];
-
 try {
     $stmtSettings = $pdo->query("SELECT setting_key, setting_value FROM settings WHERE setting_key IN ('start_time', 'end_time')");
-
     while ($rowSettings = $stmtSettings->fetch()) {
         $electionSettings[$rowSettings['setting_key']] = $rowSettings['setting_value'];
     }
@@ -68,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $hash = password_hash($password, PASSWORD_DEFAULT);
                 $update = $pdo->prepare("UPDATE voters SET password = :pass WHERE id = :id");
                 $update->execute([':pass' => $hash, ':id' => $voter['id']]);
-
+                
                 // Login User
                 $_SESSION['voter_id'] = $voter['id'];
                 $_SESSION['voter_name'] = $voter['name'];
@@ -103,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 
     $voterId = $_SESSION['voter_id'];
-    $votes = $_POST['votes'] ?? [];
+    $votes = $_POST['votes'] ?? []; // Array of candidate IDs or Arrays of IDs
 
     // Check if already voted
     $stmt = $pdo->prepare("SELECT has_voted FROM voters WHERE id = ?");
@@ -121,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
     foreach ($votes as $positionId => $candidateData) {
         // ENFORCED RULE: Only 1 vote per position allowed regardless of database setting
-        $maxAllowed = 1;
+        $maxAllowed = 1; 
         if (is_array($candidateData) && count($candidateData) > $maxAllowed) {
             die("Overvoting detected! You exceeded the maximum allowed votes. The ballot is void.");
         }
@@ -210,15 +206,18 @@ if (isset($_SESSION['voter_id'])) {
                     sans: ['Inter', 'sans-serif'],
                 },
                 colors: {
+                    // Deep Professional Navy
                     'primary': '#001f3f', 
+                    // JRMSU Gold
                     'secondary': '#DAA520', 
+                    // Soft background
                     'bg-slate': '#f1f5f9',
                     'accent': '#FFD700',
                 },
             },
         },
     };
-    </script>
+</script>
     <style>
     body {
         font-family: 'Inter', sans-serif;
@@ -231,7 +230,7 @@ if (isset($_SESSION['voter_id'])) {
         background: linear-gradient(135deg, #001f3f 0%, #003366 100%);
     }
 
-    /* Glassmorphism Card */
+    /* Glassmorphism Card for Login & Ballot */
     .glass-card {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
@@ -239,6 +238,7 @@ if (isset($_SESSION['voter_id'])) {
         box-shadow: 0 8px 32px 0 rgba(0, 31, 63, 0.1);
     }
 
+    /* Candidate Selection Card */
     .candidate-option {
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         border: 2px solid transparent;
@@ -258,12 +258,14 @@ if (isset($_SESSION['voter_id'])) {
         box-shadow: 0 0 15px rgba(218, 165, 32, 0.2);
     }
 
+    /* Show Check icon when selected */
     input[type="radio"]:checked + div .check-icon,
     input[type="checkbox"]:checked + div .check-icon {
         opacity: 1;
         transform: scale(1);
     }
 
+    /* Navigation Buttons */
     .btn-nav {
         @apply px-4 py-2 rounded-lg transition-all duration-200 font-semibold;
     }
@@ -272,6 +274,7 @@ if (isset($_SESSION['voter_id'])) {
         color: #DAA520;
     }
 
+    /* Submit Button Effect */
     .btn-submit {
         background: linear-gradient(135deg, #001f3f 0%, #003366 100%);
         transition: all 0.3s ease;
@@ -282,24 +285,21 @@ if (isset($_SESSION['voter_id'])) {
         box-shadow: 0 10px 20px rgba(218, 165, 32, 0.3);
     }
     
-    /* Scrollbar Styling for Webkit - Smooth Professional Look */
-    html {
-        scroll-behavior: smooth;
-    }
+    /* Scrollbar Styling for Webkit */
     ::-webkit-scrollbar {
         width: 8px;
     }
     ::-webkit-scrollbar-track {
-        background: #f1f5f9;
+        background: #f1f5f9; 
     }
     ::-webkit-scrollbar-thumb {
         background: #cbd5e1; 
         border-radius: 4px;
     }
     ::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
+        background: #94a3b8; 
     }
-    </style>
+</style>
 </head>
 <body class="text-gray-800 h-screen flex flex-col overflow-hidden">
 
@@ -309,8 +309,7 @@ if (isset($_SESSION['voter_id'])) {
             <div class="text-center mb-8">
                 <img src="OIP.jpg" alt="JRMSU Logo" class="h-24 w-24 rounded-full object-cover mx-auto drop-shadow-md border-2 border-secondary">
             </div>
-         
-            <div class="flex items-center mb-6">
+           <div class="flex items-center mb-6">
                 <div class="bg-secondary p-2 rounded-lg shadow-lg">
                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -363,7 +362,7 @@ if (isset($_SESSION['voter_id'])) {
             const checkBtn = document.getElementById('check-id-btn');
             const submitBtn = document.getElementById('submit-btn');
             const passHelp = document.getElementById('pass-help');
-            
+
             if(!idInput.value) {
                 alert("Please enter your Student ID");
                 return;
@@ -384,32 +383,24 @@ if (isset($_SESSION['voter_id'])) {
     </script>
 
     <?php else: ?>
-    <div class="flex h-screen overflow-hidden w-full relative">
+
+    <div class="flex h-screen overflow-hidden w-full">
         
-        <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 z-40 hidden md:hidden transition-opacity"></div>
-
-        <aside id="sidebar" class="w-72 bg-primary text-white flex flex-col shrink-0 fixed md:relative inset-y-0 left-0 z-50 h-full transition-transform duration-300 ease-in-out -translate-x-full md:translate-x-0 shadow-2xl md:shadow-none">
-            
-            <button id="close-sidebar-btn" class="md:hidden absolute top-4 right-4 text-white hover:text-secondary focus:outline-none">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-
-            <div class="p-6 flex items-center border-b border-white/10 mt-8 md:mt-0">
+        <aside class="w-72 bg-primary text-white hidden md:flex flex-col shrink-0">
+            <div class="p-6 flex items-center border-b border-white/10">
                 <img src="OIP.jpg" alt="JRMSU Logo" class="h-12 w-12 rounded-full border-2 border-secondary mr-3 object-cover shadow-md bg-white">
                 <div class="leading-tight">
                     <span class="block text-xl font-bold tracking-wide">Voter Portal</span>
                     <span class="block text-[10px] text-secondary font-bold uppercase tracking-widest mt-0.5">Siocon Campus</span>
                 </div>
             </div>
-            
-            <div class="p-6 overflow-y-auto">
+            <div class="p-6">
                 <div class="mb-6 bg-white/5 rounded-xl p-4 border border-white/10">
                     <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Logged in as</p>
                     <p class="font-bold text-lg text-white truncate" title="<?php echo htmlspecialchars($_SESSION['voter_name']); ?>">
                         <?php echo htmlspecialchars($_SESSION['voter_name']); ?>
                     </p>
                 </div>
-                
                 <div class="mb-6">
                     <p class="text-xs text-gray-400 uppercase tracking-wider mb-2">Voting Status</p>
                     <?php if($voterData['has_voted']): ?>
@@ -430,7 +421,6 @@ if (isset($_SESSION['voter_id'])) {
                     <?php endif; ?>
                 </div>
             </div>
-            
             <div class="mt-auto p-6 border-t border-white/10">
                 <a href="?logout=true" class="flex items-center text-gray-300 hover:text-white hover:bg-white/10 p-3 rounded-lg transition-colors">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
@@ -439,13 +429,10 @@ if (isset($_SESSION['voter_id'])) {
             </div>
         </aside>
 
-        <main class="flex-1 flex flex-col h-full overflow-hidden bg-gray-50 relative w-full">
+        <main class="flex-1 flex flex-col h-full overflow-hidden bg-gray-50 relative">
             
             <header class="bg-primary text-white p-4 md:hidden flex justify-between items-center shadow-md z-10 shrink-0">
                 <div class="flex items-center">
-                    <button id="mobile-menu-btn" class="mr-3 text-white hover:text-secondary focus:outline-none">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                    </button>
                     <img src="OIP.jpg" alt="JRMSU Logo" class="h-9 w-9 rounded-full border border-secondary mr-2 object-cover bg-white">
                     <div class="leading-none">
                         <span class="block font-bold text-[15px]">JRMSU Voting</span>
@@ -453,8 +440,8 @@ if (isset($_SESSION['voter_id'])) {
                     </div>
                 </div>
                 <a href="?logout=true" class="text-xs bg-white/10 hover:bg-white/20 transition-colors px-3 py-2 rounded-lg font-semibold flex items-center border border-white/10">
-                    <svg class="w-4 h-4 sm:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                    <span class="hidden sm:inline">Logout</span>
+                    <svg class="w-4 h-4 mr-1 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    Logout
                 </a>
             </header>
 
@@ -510,7 +497,7 @@ if (isset($_SESSION['voter_id'])) {
                                             usort($posCandidates, function($a, $b) use ($voteCounts) {
                                                 return ($voteCounts[$b['id']] ?? 0) - ($voteCounts[$a['id']] ?? 0);
                                             });
-
+                                            
                                             if(empty($posCandidates)):
                                             ?>
                                                 <p class="text-gray-400 text-sm italic text-center py-4">No candidates.</p>
@@ -660,23 +647,6 @@ if (isset($_SESSION['voter_id'])) {
                 }
             });
         });
-
-        // Mobile Sidebar Toggle Logic
-        const sidebar = document.getElementById('sidebar');
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const closeSidebarBtn = document.getElementById('close-sidebar-btn');
-        const overlay = document.getElementById('sidebar-overlay');
-
-        function toggleSidebar() {
-            if(sidebar && overlay) {
-                sidebar.classList.toggle('-translate-x-full');
-                overlay.classList.toggle('hidden');
-            }
-        }
-
-        if(mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleSidebar);
-        if(closeSidebarBtn) closeSidebarBtn.addEventListener('click', toggleSidebar);
-        if(overlay) overlay.addEventListener('click', toggleSidebar);
     });
     </script>
     <?php endif; ?>
